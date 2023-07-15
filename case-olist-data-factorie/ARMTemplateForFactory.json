@@ -7,13 +7,13 @@
 			"metadata": "Nome do Data Factory",
 			"defaultValue": "case-olist-data-factorie"
 		},
-		"olist_sql_linked_service_connectionString": {
-			"type": "secureString",
-			"metadata": "Cadeia de caracteres segura para 'connectionString' de 'olist_sql_linked_service'"
-		},
 		"olist_data_lake_linked_service_accountKey": {
 			"type": "secureString",
 			"metadata": "Cadeia de caracteres segura para 'accountKey' de 'olist_data_lake_linked_service'"
+		},
+		"olist_sql_linked_service_connectionString": {
+			"type": "secureString",
+			"metadata": "Cadeia de caracteres segura para 'connectionString' de 'olist_sql_linked_service'"
 		},
 		"olist_data_lake_linked_service_properties_typeProperties_url": {
 			"type": "string",
@@ -25,13 +25,13 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"name": "[concat(parameters('factoryName'), '/pipeline_customers')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "olist_copy_data",
+						"name": "olist_copy_tbcustomers_data",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -83,6 +83,67 @@
 								"parameters": {}
 							}
 						]
+					},
+					{
+						"name": "olist_copy_tborders_data",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "olist_copy_tbcustomers_data",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "olist_sqlServer_orders",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "olist_data_lake_landing",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -93,21 +154,280 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/olist_sqlServer_customers')]",
-				"[concat(variables('factoryId'), '/datasets/olist_data_lake_landing')]"
+				"[concat(variables('factoryId'), '/datasets/olist_data_lake_landing')]",
+				"[concat(variables('factoryId'), '/datasets/olist_sqlServer_orders')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/olist_sql_linked_service')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"name": "[concat(parameters('factoryName'), '/pipeline_olist_sql_all')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
+				"activities": [
+					{
+						"name": "ForEach_u9f",
+						"type": "ForEach",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@pipeline().parameters.cw_items",
+								"type": "Expression"
+							},
+							"batchCount": 1,
+							"activities": [
+								{
+									"name": "Copy_u9f",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "dbo.@{item().source.table}"
+										},
+										{
+											"name": "Destination",
+											"value": "landing//@{item().destination.fileName}"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"validateDataConsistency": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "SourceDataset_u9f",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_table": "@item().source.table"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DestinationDataset_u9f",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_fileName": "@item().destination.fileName"
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"cw_items": {
+						"type": "Array",
+						"defaultValue": [
+							{
+								"source": {
+									"table": "olist_customers_dataset"
+								},
+								"destination": {
+									"fileName": "dbo.olist_tbcustomers_dataset.csv"
+								}
+							},
+							{
+								"source": {
+									"table": "olist_geolocation_dataset"
+								},
+								"destination": {
+									"fileName": "dbo.olist_tbgeolocation_dataset.csv"
+								}
+							},
+							{
+								"source": {
+									"table": "olist_order_items_dataset"
+								},
+								"destination": {
+									"fileName": "dbo.olist_tborder_items_dataset.csv"
+								}
+							},
+							{
+								"source": {
+									"table": "olist_order_payments_dataset"
+								},
+								"destination": {
+									"fileName": "dbo.olist_tborder_payments_dataset.csv"
+								}
+							},
+							{
+								"source": {
+									"table": "olist_order_reviews_dataset"
+								},
+								"destination": {
+									"fileName": "dbo.olist_tborder_reviews_dataset.csv"
+								}
+							},
+							{
+								"source": {
+									"table": "olist_orders_dataset"
+								},
+								"destination": {
+									"fileName": "dbo.olist_tborders_dataset.csv"
+								}
+							},
+							{
+								"source": {
+									"table": "olist_products_dataset"
+								},
+								"destination": {
+									"fileName": "dbo.olist_tbproducts_dataset.csv"
+								}
+							},
+							{
+								"source": {
+									"table": "olist_sellers_dataset"
+								},
+								"destination": {
+									"fileName": "dbo.olist_tbsellers_dataset.csv"
+								}
+							},
+							{
+								"source": {
+									"table": "product_category_name_translation"
+								},
+								"destination": {
+									"fileName": "dbo.product_tbcategory_name_translation.csv"
+								}
+							}
+						]
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SourceDataset_u9f')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationDataset_u9f')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationDataset_u9f')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "olist_data_lake_linked_service",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"cw_fileName": {
+						"type": "String"
+					}
+				},
 				"annotations": [],
-				"type": "AzureSqlDatabase",
+				"type": "DelimitedText",
 				"typeProperties": {
-					"connectionString": "[parameters('olist_sql_linked_service_connectionString')]"
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().cw_fileName",
+							"type": "Expression"
+						},
+						"fileSystem": "landing"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/olist_data_lake_linked_service')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceDataset_u9f')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "olist_sql_linked_service",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"cw_table": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": {
+						"value": "@dataset().cw_table",
+						"type": "Expression"
+					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/olist_sql_linked_service')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/olist_data_lake_landing')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "olist_data_lake_linked_service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "landing"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/olist_data_lake_linked_service')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/olist_sqlServer_customers')]",
@@ -152,6 +472,60 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/olist_sqlServer_orders')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "olist_sql_linked_service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "order_id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "customer_id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "order_status",
+						"type": "nvarchar"
+					},
+					{
+						"name": "order_purchase_timestamp",
+						"type": "nvarchar"
+					},
+					{
+						"name": "order_approved_at",
+						"type": "nvarchar"
+					},
+					{
+						"name": "order_delivered_carrier_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "order_delivered_customer_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "order_estimated_delivery_date",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "olist_orders_dataset"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/olist_sql_linked_service')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/olist_data_lake_linked_service')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -169,31 +543,17 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/olist_data_lake_landing')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/olist_sql_linked_service')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "olist_data_lake_linked_service",
-					"type": "LinkedServiceReference"
-				},
 				"annotations": [],
-				"type": "DelimitedText",
+				"type": "AzureSqlDatabase",
 				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"folderPath": "landing"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
+					"connectionString": "[parameters('olist_sql_linked_service_connectionString')]"
+				}
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/olist_data_lake_linked_service')]"
-			]
+			"dependsOn": []
 		}
 	]
 }

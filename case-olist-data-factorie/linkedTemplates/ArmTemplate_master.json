@@ -7,13 +7,13 @@
 			"metadata": "Nome do Data Factory",
 			"defaultValue": "case-olist-data-factorie"
 		},
-		"olist_sql_linked_service_connectionString": {
-			"type": "secureString",
-			"metadata": "Cadeia de caracteres segura para 'connectionString' de 'olist_sql_linked_service'"
-		},
 		"olist_data_lake_linked_service_accountKey": {
 			"type": "secureString",
 			"metadata": "Cadeia de caracteres segura para 'accountKey' de 'olist_data_lake_linked_service'"
+		},
+		"olist_sql_linked_service_connectionString": {
+			"type": "secureString",
+			"metadata": "Cadeia de caracteres segura para 'connectionString' de 'olist_sql_linked_service'"
 		},
 		"olist_data_lake_linked_service_properties_typeProperties_url": {
 			"type": "string",
@@ -46,11 +46,11 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
-					"olist_sql_linked_service_connectionString": {
-						"value": "[parameters('olist_sql_linked_service_connectionString')]"
-					},
 					"olist_data_lake_linked_service_accountKey": {
 						"value": "[parameters('olist_data_lake_linked_service_accountKey')]"
+					},
+					"olist_sql_linked_service_connectionString": {
+						"value": "[parameters('olist_sql_linked_service_connectionString')]"
 					},
 					"olist_data_lake_linked_service_properties_typeProperties_url": {
 						"value": "[parameters('olist_data_lake_linked_service_properties_typeProperties_url')]"
