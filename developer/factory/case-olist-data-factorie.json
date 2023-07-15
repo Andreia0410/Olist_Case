@@ -1,0 +1,9 @@
+{
+	"name": "case-olist-data-factorie",
+	"location": "eastus2",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "2c4f12f4-e84d-4d6f-bdef-d5ed936a08ed",
+		"tenantId": "08c4fc76-c27a-4460-8e99-fbf442ba6728"
+	}
+}
