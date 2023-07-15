@@ -1,0 +1,49 @@
+{
+	"name": "olist_sqlServer_orders",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "olist_sql_linked_service",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "order_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "customer_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "order_status",
+				"type": "nvarchar"
+			},
+			{
+				"name": "order_purchase_timestamp",
+				"type": "nvarchar"
+			},
+			{
+				"name": "order_approved_at",
+				"type": "nvarchar"
+			},
+			{
+				"name": "order_delivered_carrier_date",
+				"type": "nvarchar"
+			},
+			{
+				"name": "order_delivered_customer_date",
+				"type": "nvarchar"
+			},
+			{
+				"name": "order_estimated_delivery_date",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "olist_orders_dataset"
+		}
+	}
+}
