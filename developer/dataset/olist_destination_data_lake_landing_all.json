@@ -1,5 +1,5 @@
 {
-	"name": "DestinationDataset_u9f",
+	"name": "olist_destination_data_lake_landing_all",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "olist_data_lake_linked_service",
