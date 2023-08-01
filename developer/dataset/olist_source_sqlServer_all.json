@@ -1,5 +1,5 @@
 {
-	"name": "SourceDataset_u9f",
+	"name": "olist_source_sqlServer_all",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "olist_sql_linked_service",

@@ -64,7 +64,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "SourceDataset_u9f",
+									"referenceName": "olist_source_sqlServer_all",
 									"type": "DatasetReference",
 									"parameters": {
 										"cw_table": "@item().source.table"
@@ -73,7 +73,7 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "DestinationDataset_u9f",
+									"referenceName": "olist_destination_data_lake_landing_all",
 									"type": "DatasetReference",
 									"parameters": {
 										"cw_fileName": "@item().destination.fileName"
@@ -82,6 +82,33 @@
 							]
 						}
 					]
+				}
+			},
+			{
+				"name": "olist_processing_notebook",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "ForEach_u9f",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/andreia___@hotmail.com/mnt/landing/olist_processing"
+				},
+				"linkedServiceName": {
+					"referenceName": "olist_linked_service_databricks",
+					"type": "LinkedServiceReference"
 				}
 			}
 		],
