@@ -8,11 +8,17 @@
 		"olist_data_lake_linked_service_accountKey": {
 			"value": ""
 		},
+		"olist_linked_service_databricks_accessToken": {
+			"value": ""
+		},
 		"olist_sql_linked_service_connectionString": {
 			"value": ""
 		},
 		"olist_data_lake_linked_service_properties_typeProperties_url": {
 			"value": "https://caseoliststorageaccount2.dfs.core.windows.net/"
+		},
+		"olist_linked_service_databricks_properties_typeProperties_existingClusterId": {
+			"value": "0717-190449-ygaf4d1r"
 		}
 	}
 }

@@ -4,20 +4,28 @@
 	"parameters": {
 		"factoryName": {
 			"type": "string",
-			"metadata": "Nome do Data Factory",
+			"metadata": "Data Factory name",
 			"defaultValue": "case-olist-data-factorie"
 		},
 		"olist_data_lake_linked_service_accountKey": {
 			"type": "secureString",
-			"metadata": "Cadeia de caracteres segura para 'accountKey' de 'olist_data_lake_linked_service'"
+			"metadata": "Secure string for 'accountKey' of 'olist_data_lake_linked_service'"
+		},
+		"olist_linked_service_databricks_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'olist_linked_service_databricks'"
 		},
 		"olist_sql_linked_service_connectionString": {
 			"type": "secureString",
-			"metadata": "Cadeia de caracteres segura para 'connectionString' de 'olist_sql_linked_service'"
+			"metadata": "Secure string for 'connectionString' of 'olist_sql_linked_service'"
 		},
 		"olist_data_lake_linked_service_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://caseoliststorageaccount2.dfs.core.windows.net/"
+		},
+		"olist_linked_service_databricks_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0717-190449-ygaf4d1r"
 		}
 	},
 	"variables": {
@@ -37,6 +45,24 @@
 						"type": "SecureString",
 						"value": "[parameters('olist_data_lake_linked_service_accountKey')]"
 					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/olist_linked_service_databricks')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-1022960908514514.14.azuredatabricks.net",
+					"accessToken": {
+						"type": "SecureString",
+						"value": "[parameters('olist_linked_service_databricks_accessToken')]"
+					},
+					"existingClusterId": "[parameters('olist_linked_service_databricks_properties_typeProperties_existingClusterId')]"
 				}
 			},
 			"dependsOn": []
@@ -463,6 +489,33 @@
 								}
 							]
 						}
+					},
+					{
+						"name": "olist_processing_notebook",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "ForEach_u9f",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/andreia___@hotmail.com/mnt/landing/olist_processing"
+						},
+						"linkedServiceName": {
+							"referenceName": "olist_linked_service_databricks",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"policy": {
@@ -551,6 +604,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/olist_linked_service_databricks')]",
 				"[concat(variables('factoryId'), '/datasets/olist_source_sqlServer_all')]",
 				"[concat(variables('factoryId'), '/datasets/olist_destination_data_lake_landing_all')]"
 			]
