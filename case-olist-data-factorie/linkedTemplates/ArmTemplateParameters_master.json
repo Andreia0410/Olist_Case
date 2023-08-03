@@ -20,6 +20,82 @@
 		"olist_linked_service_databricks_properties_typeProperties_existingClusterId": {
 			"value": "0717-190449-ygaf4d1r"
 		},
+		"olist_pipeline_all_trigger1_properties_pipeline_olist_sql_all_parameters_cw_items": {
+			"value": [
+				{
+					"source": {
+						"table": "olist_customers_dataset"
+					},
+					"destination": {
+						"fileName": "dbo.olist_tbcustomers_dataset.csv"
+					}
+				},
+				{
+					"source": {
+						"table": "olist_geolocation_dataset"
+					},
+					"destination": {
+						"fileName": "dbo.olist_tbgeolocation_dataset.csv"
+					}
+				},
+				{
+					"source": {
+						"table": "olist_order_items_dataset"
+					},
+					"destination": {
+						"fileName": "dbo.olist_tborder_items_dataset.csv"
+					}
+				},
+				{
+					"source": {
+						"table": "olist_order_payments_dataset"
+					},
+					"destination": {
+						"fileName": "dbo.olist_tborder_payments_dataset.csv"
+					}
+				},
+				{
+					"source": {
+						"table": "olist_order_reviews_dataset"
+					},
+					"destination": {
+						"fileName": "dbo.olist_tborder_reviews_dataset.csv"
+					}
+				},
+				{
+					"source": {
+						"table": "olist_orders_dataset"
+					},
+					"destination": {
+						"fileName": "dbo.olist_tborders_dataset.csv"
+					}
+				},
+				{
+					"source": {
+						"table": "olist_products_dataset"
+					},
+					"destination": {
+						"fileName": "dbo.olist_tbproducts_dataset.csv"
+					}
+				},
+				{
+					"source": {
+						"table": "olist_sellers_dataset"
+					},
+					"destination": {
+						"fileName": "dbo.olist_tbsellers_dataset.csv"
+					}
+				},
+				{
+					"source": {
+						"table": "product_category_name_translation"
+					},
+					"destination": {
+						"fileName": "dbo.product_tbcategory_name_translation.csv"
+					}
+				}
+			]
+		},
 		"containerUri": {
 			"value": ""
 		},
