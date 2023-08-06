@@ -1,0 +1,17 @@
+{
+	"name": "Synapse_create_stored_procedure",
+	"properties": {
+		"content": {
+			"query": "CREATE OR ALTER PROC CreateSQLServerlessOrderView\nAS\nBEGIN\n\nDECLARE @Statement VARCHAR(MAX) *\n'\nCREATE OR ALTER VIEW olistOrders AS\nSELECT \n    * \nFROM \n    OPENROWSET(\n        BULK = \"processing/orders.parquet/*.parquet\",\n        DATA_SOURCE = 'OlistDataLake',\n        FORMAT = 'PARQUET'\n        ) AS ord;\n'\nPRINT @Statement\n\nEXEC (@Statement)\n\nEND\nGO\n\nEXEC CreateSQLServerlessOrderView\n\nSELECT * FROM olistOrders",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
