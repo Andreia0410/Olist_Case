@@ -1,0 +1,177 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"type": "string",
+			"metadata": "Nome do Workspace",
+			"defaultValue": "olist-synapse"
+		},
+		"olist-synapse-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Cadeia de caracteres segura para 'connectionString' de 'olist-synapse-WorkspaceDefaultSqlServer'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:olist-synapse.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"olist-synapse-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://caseoliststorageaccount2.dfs.core.windows.net"
+		}
+	},
+	"variables": {
+		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/olist-synapse-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('olist-synapse-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/olist-synapse-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('olist-synapse-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
+			"type": "Microsoft.Synapse/workspaces/credentials",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQl script_olist_processing')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT TOP 100 * FROM\n    OPENROWSET(\n        BULK'https://caseoliststorageaccount2.dfs.core.windows.net/processing/orders.parquet/*.parquet',\n        FORMAT='PARQUET'\n    ) AS [orders_pool]\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Synapse_create_external_data_source_orders')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "DROP DATABASE IF EXISTS olist_synapse\nGO\n\nCREATE DATABASE [olist_synapse];\nGO\n\nUSE olist_synapse\nGO\n\nCREATE EXTERNAL DATA SOURCE OlistDataLake\nWITH (LOCATION = 'https://caseoliststorageaccount2.dfs.core.windows.net/');\nGO\n\nDROP VIEW IF EXISTS olistOrders;\nGO\n\nCREATE VIEW olistOrders AS\nSELECT * FROM \n    OPENROWSET(\n        BULK'processing/orders.parquet/*.parquet',\n        DATA_SOURCE = 'OlistDataLake',\n        FORMAT='PARQUET'\n        ) AS ord;\nGO\n\nSELECT * FROM olistOrders\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "olist_synapse",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Synapse_select_orders_per_year')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT \n    YEAR(order_purchase_timestamp) AS current_year,\n    COUNT(*) AS orders_per_year\nFROM\n   OPENROWSET(\n        BULK'https://caseoliststorageaccount2.dfs.core.windows.net/processing/orders.parquet/*.parquet',\n        FORMAT='PARQUET'\n    ) AS [orders_year_pool]\nGROUP BY YEAR(order_purchase_timestamp)\nORDER BY 1 DESC\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Synapse_create_external_data_source_all')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "DROP DATABASE IF EXISTS olist_synapse\nGO\n\nCREATE DATABASE [olist_synapse];\nGO\n\nUSE olist_synapse\nGO\n\n-- Create an External Data Source\nCREATE EXTERNAL DATA SOURCE OlistDataLake\nWITH ( LOCATION = 'https://caseoliststorageaccount2.dfs.core.windows.net/');\nGO\n\n-- Drop views if they exist\nIF OBJECT_ID('dbo.olistCustomers', 'V') IS NOT NULL\nDROP VIEW dbo.olistCustomers;\n\nIF OBJECT_ID('dbo.olistOrderItems', 'V') IS NOT NULL\nDROP VIEW dbo.olistOrderItems;\n\nIF OBJECT_ID('dbo.olistOrderPayments', 'V') IS NOT NULL\nDROP VIEW dbo.olistOrderPayments;\n\nIF OBJECT_ID('dbo.olistOrderReviews', 'V') IS NOT NULL\nDROP VIEW dbo.olistOrderReviews;\n\nIF OBJECT_ID('dbo.olistProductCategoryNameTranslation', 'V') IS NOT NULL\nDROP VIEW dbo.olistProductCategoryNameTranslation;\n\nIF OBJECT_ID('dbo.olistSellers', 'V') IS NOT NULL\nDROP VIEW dbo.olistSellers;\n\n-- Create views\nCREATE VIEW dbo.olistCustomers\nAS\nSELECT * FROM OPENROWSET(\n    BULK'processing/customers.parquet/*.parquet',\n    DATA_SOURCE = 'OlistDataLake',\n    FORMAT='PARQUET'\n    ) AS ord;\nGO\n\nCREATE VIEW dbo.olistOrderItems\nAS\nSELECT * FROM OPENROWSET(\n    BULK'processing/order_items.parquet/*.parquet',\n    DATA_SOURCE = 'OlistDataLake',\n    FORMAT='PARQUET'\n    ) AS ord;\nGO\n\nCREATE VIEW dbo.olistOrderPayments\nAS\nSELECT * FROM OPENROWSET(\n    BULK'processing/order_payments.parquet/*.parquet',\n    DATA_SOURCE = 'OlistDataLake',\n    FORMAT='PARQUET'\n    ) AS ord;\nGO\n\nCREATE VIEW dbo.olistOrderReviews\nAS\nSELECT * FROM OPENROWSET(\n    BULK'processing/order_reviews.parquet/*.parquet',\n    DATA_SOURCE = 'OlistDataLake',\n    FORMAT='PARQUET'\n    ) AS ord;\nGO\n\nCREATE VIEW dbo.olistProductCategoryNameTranslation\nAS\nSELECT * FROM OPENROWSET(\n    BULK'processing/product_category_name_translation.parquet/*.parquet',\n    DATA_SOURCE = 'OlistDataLake',\n    FORMAT='PARQUET'\n    ) AS ord;\nGO\n\nCREATE VIEW dbo.olistSellers\nAS\nSELECT * FROM OPENROWSET(\n    BULK'processing/sellers.parquet/*.parquet',\n    DATA_SOURCE = 'OlistDataLake',\n    FORMAT='PARQUET'\n    ) AS ord;\nGO\n\nSELECT * FROM olistSellers\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "olist_synapse",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		}
+	]
+}
