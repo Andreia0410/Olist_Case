@@ -1,0 +1,17 @@
+{
+	"name": "SQl script_olist_processing",
+	"properties": {
+		"content": {
+			"query": "SELECT TOP 100 * FROM\n    OPENROWSET(\n        BULK'https://caseoliststorageaccount2.dfs.core.windows.net/processing/orders.parquet/*.parquet',\n        FORMAT='PARQUET'\n    ) AS [orders_pool]\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

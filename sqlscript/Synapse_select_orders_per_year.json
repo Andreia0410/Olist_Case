@@ -1,0 +1,17 @@
+{
+	"name": "Synapse_select_orders_per_year",
+	"properties": {
+		"content": {
+			"query": "SELECT \n    YEAR(order_purchase_timestamp) AS current_year,\n    COUNT(*) AS orders_per_year\nFROM\n   OPENROWSET(\n        BULK'https://caseoliststorageaccount2.dfs.core.windows.net/processing/orders.parquet/*.parquet',\n        FORMAT='PARQUET'\n    ) AS [orders_year_pool]\nGROUP BY YEAR(order_purchase_timestamp)\nORDER BY 1 DESC\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

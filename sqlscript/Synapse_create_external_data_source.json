@@ -1,0 +1,17 @@
+{
+	"name": "Synapse_create_external_data_source",
+	"properties": {
+		"content": {
+			"query": "DROP DATABASE IF EXISTS olist_synapse\nGO\n\nCREATE DATABASE [olist_synapse];\nGO\n\nUSE olist_synapse\nGO\n\nCREATE EXTERNAL DATA SOURCE OlistDataLake\nWITH (LOCATION = 'https://caseoliststorageaccount2.dfs.core.windows.net/');\nGO\n\nDROP VIEW IF EXISTS olistOrders;\nGO\n\nCREATE VIEW olistOrders AS\nSELECT * FROM \n    OPENROWSET(\n        BULK'processing/orders.parquet/*.parquet',\n        DATA_SOURCE = 'OlistDataLake',\n        FORMAT='PARQUET'\n        ) AS ord;\nGO\n\nSELECT * FROM olistOrders\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "olist_synapse",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
