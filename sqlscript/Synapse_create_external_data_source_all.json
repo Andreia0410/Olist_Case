@@ -1,0 +1,17 @@
+{
+	"name": "Synapse_create_external_data_source_all",
+	"properties": {
+		"content": {
+			"query": "DROP DATABASE IF EXISTS olist_synapse\nGO\n\nCREATE DATABASE [olist_synapse];\nGO\n\nUSE olist_synapse\nGO\n\n-- Create an External Data Source\nCREATE EXTERNAL DATA SOURCE OlistDataLake\nWITH ( LOCATION = 'https://caseoliststorageaccount2.dfs.core.windows.net/');\nGO\n\n-- Drop views if they exist\nIF OBJECT_ID('dbo.olistCustomers', 'V') IS NOT NULL\nDROP VIEW dbo.olistCustomers;\n\nIF OBJECT_ID('dbo.olistOrderItems', 'V') IS NOT NULL\nDROP VIEW dbo.olistOrderItems;\n\nIF OBJECT_ID('dbo.olistOrderPayments', 'V') IS NOT NULL\nDROP VIEW dbo.olistOrderPayments;\n\nIF OBJECT_ID('dbo.olistOrderReviews', 'V') IS NOT NULL\nDROP VIEW dbo.olistOrderReviews;\n\nIF OBJECT_ID('dbo.olistProductCategoryNameTranslation', 'V') IS NOT NULL\nDROP VIEW dbo.olistProductCategoryNameTranslation;\n\nIF OBJECT_ID('dbo.olistSellers', 'V') IS NOT NULL\nDROP VIEW dbo.olistSellers;\n\n-- Create views\nCREATE VIEW dbo.olistCustomers\nAS\nSELECT * FROM OPENROWSET(\n    BULK'processing/customers.parquet/*.parquet',\n    DATA_SOURCE = 'OlistDataLake',\n    FORMAT='PARQUET'\n    ) AS ord;\nGO\n\nCREATE VIEW dbo.olistOrderItems\nAS\nSELECT * FROM OPENROWSET(\n    BULK'processing/order_items.parquet/*.parquet',\n    DATA_SOURCE = 'OlistDataLake',\n    FORMAT='PARQUET'\n    ) AS ord;\nGO\n\nCREATE VIEW dbo.olistOrderPayments\nAS\nSELECT * FROM OPENROWSET(\n    BULK'processing/order_payments.parquet/*.parquet',\n    DATA_SOURCE = 'OlistDataLake',\n    FORMAT='PARQUET'\n    ) AS ord;\nGO\n\nCREATE VIEW dbo.olistOrderReviews\nAS\nSELECT * FROM OPENROWSET(\n    BULK'processing/order_reviews.parquet/*.parquet',\n    DATA_SOURCE = 'OlistDataLake',\n    FORMAT='PARQUET'\n    ) AS ord;\nGO\n\nCREATE VIEW dbo.olistProductCategoryNameTranslation\nAS\nSELECT * FROM OPENROWSET(\n    BULK'processing/product_category_name_translation.parquet/*.parquet',\n    DATA_SOURCE = 'OlistDataLake',\n    FORMAT='PARQUET'\n    ) AS ord;\nGO\n\nCREATE VIEW dbo.olistSellers\nAS\nSELECT * FROM OPENROWSET(\n    BULK'processing/sellers.parquet/*.parquet',\n    DATA_SOURCE = 'OlistDataLake',\n    FORMAT='PARQUET'\n    ) AS ord;\nGO\n\nSELECT * FROM olistSellers\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "olist_synapse",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
