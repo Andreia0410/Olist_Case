@@ -5,8 +5,8 @@
 		"annotations": [],
 		"type": "AzureSqlDW",
 		"typeProperties": {
-			"connectionString": "integrated security=False;encrypt=True;connection timeout=30;data source=olist-synapse-ondemand.sql.azuresynapse.net;initial catalog=olist-synapse;user id=olist_adim",
-			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDI1RUMzMkI3LUNDMkItNDFCOC1BN0U0LTk5RDE0MERCQzA5Ml9kNmE4Mjg4Mi00OGRjLTQxZmEtYWY1MC1kODNhZjMzMmMwZTgiDQp9"
+			"connectionString": "integrated security=False;encrypt=True;connection timeout=30;data source=olist-synapse-ondemand.sql.azuresynapse.net;initial catalog=olist_synapse;user id=olist_adim",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDI1RUMzMkI3LUNDMkItNDFCOC1BN0U0LTk5RDE0MERCQzA5Ml9mZjU0ZTY0NS0wMTY3LTRiYWQtOTlkOC05MDM0NTJjMTg5MmYiDQp9"
 		}
 	}
 }
