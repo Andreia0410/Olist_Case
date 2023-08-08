@@ -87,6 +87,26 @@
 			{
 				"name": "olist_processing_notebook",
 				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/andreia___@hotmail.com/mnt/landing/olist_processing"
+				},
+				"linkedServiceName": {
+					"referenceName": "olist_linked_service_databricks",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "olist_stored_proc_orders_view",
+				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
 						"activity": "ForEach_u9f",
@@ -104,10 +124,10 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"notebookPath": "/Users/andreia___@hotmail.com/mnt/landing/olist_processing"
+					"storedProcedureName": "[dbo].[CreateSQLServerlessOrderView]"
 				},
 				"linkedServiceName": {
-					"referenceName": "olist_linked_service_databricks",
+					"referenceName": "olist_stored_proc_orders_view",
 					"type": "LinkedServiceReference"
 				}
 			}
