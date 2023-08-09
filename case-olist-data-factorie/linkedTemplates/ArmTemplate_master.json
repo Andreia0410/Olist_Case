@@ -19,6 +19,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'olist_sql_linked_service'"
 		},
+		"olist_stored_proc_orders_view_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'olist_stored_proc_orders_view'"
+		},
 		"olist_data_lake_linked_service_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://caseoliststorageaccount2.dfs.core.windows.net/"
@@ -104,6 +108,10 @@
 				}
 			]
 		},
+		"olistAzureKeyVaultSynapseAnalytics_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://olist-key-vault4.vault.azure.net/"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -140,11 +148,17 @@
 					"olist_sql_linked_service_connectionString": {
 						"value": "[parameters('olist_sql_linked_service_connectionString')]"
 					},
+					"olist_stored_proc_orders_view_connectionString": {
+						"value": "[parameters('olist_stored_proc_orders_view_connectionString')]"
+					},
 					"olist_data_lake_linked_service_properties_typeProperties_url": {
 						"value": "[parameters('olist_data_lake_linked_service_properties_typeProperties_url')]"
 					},
 					"olist_linked_service_databricks_properties_typeProperties_existingClusterId": {
 						"value": "[parameters('olist_linked_service_databricks_properties_typeProperties_existingClusterId')]"
+					},
+					"olistAzureKeyVaultSynapseAnalytics_properties_typeProperties_baseUrl": {
+						"value": "[parameters('olistAzureKeyVaultSynapseAnalytics_properties_typeProperties_baseUrl')]"
 					},
 					"olist_pipeline_all_trigger1_properties_pipeline_olist_sql_all_parameters_cw_items": {
 						"value": "[parameters('olist_pipeline_all_trigger1_properties_pipeline_olist_sql_all_parameters_cw_items')]"

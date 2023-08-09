@@ -14,6 +14,9 @@
 		"olist_sql_linked_service_connectionString": {
 			"value": ""
 		},
+		"olist_stored_proc_orders_view_connectionString": {
+			"value": ""
+		},
 		"olist_data_lake_linked_service_properties_typeProperties_url": {
 			"value": "https://caseoliststorageaccount2.dfs.core.windows.net/"
 		},
@@ -95,6 +98,9 @@
 					}
 				}
 			]
+		},
+		"olistAzureKeyVaultSynapseAnalytics_properties_typeProperties_baseUrl": {
+			"value": "https://olist-key-vault4.vault.azure.net/"
 		},
 		"containerUri": {
 			"value": ""
